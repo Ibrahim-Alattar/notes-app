@@ -27,8 +27,8 @@ export function Notes() {
 
   const filteredNotes = notes.filter(
     (note) =>
-      note.title.toLowerCase().includes(search.toLowerCase()) ||
-      note.body.toLowerCase().includes(search.toLowerCase()),
+      (note.title ?? "").toLowerCase().includes(search.trim().toLowerCase()) ||
+      (note.body ?? "").toLowerCase().includes(search.trim().toLowerCase()),
   );
 
   const selectedNote = notes.find((note) => note.id === selectedId);
@@ -43,9 +43,17 @@ export function Notes() {
   let content;
 
   if (notes.length === 0) {
-    content = <p>No notes yet.</p>;
+    content = (
+      <p className="rounded-xl border border-dashed border-neutral-300 px-4 py-12 text-center text-sm text-neutral-500">
+        No notes yet. Add your first one above.
+      </p>
+    );
   } else if (filteredNotes.length === 0) {
-    content = <p>No notes found.</p>;
+    content = (
+      <p className="rounded-xl border border-dashed border-neutral-300 px-4 py-12 text-center text-sm text-neutral-500">
+        No notes match “{search}”.
+      </p>
+    );
   } else {
     content = (
       <NotesList
@@ -55,25 +63,39 @@ export function Notes() {
       />
     );
   }
+
   return (
-    <>
-      {selectedNote ? (
-        <EditNote
-          title={selectedNote.title}
-          body={selectedNote.body}
-          onBack={() => setSelectedId(null)}
-          onUpdate={(fields) => handleUpdate(selectedNote.id, fields)}
-        />
-      ) : (
-        <div>
-          <SearchBox
-            search={search}
-            onChange={(e) => setSearch(e.target.value)}
+    <div className="min-h-screen bg-neutral-50 text-neutral-900 antialiased">
+      <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6 sm:py-12 lg:max-w-3xl lg:py-16">
+        <header className="mb-6 flex items-baseline justify-between gap-3 sm:mb-8">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+            Notes
+          </h1>
+          {notes.length > 0 && (
+            <span className="text-xs text-neutral-500 sm:text-sm">
+              {notes.length} {notes.length === 1 ? "note" : "notes"}
+            </span>
+          )}
+        </header>
+
+        {selectedNote ? (
+          <EditNote
+            title={selectedNote.title}
+            body={selectedNote.body}
+            onBack={() => setSelectedId(null)}
+            onUpdate={(fields) => handleUpdate(selectedNote.id, fields)}
           />
-          <AddNote onAdd={addNote} />
-          {content}
-        </div>
-      )}
-    </>
+        ) : (
+          <div className="flex flex-col gap-4 sm:gap-5">
+            <SearchBox
+              search={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <AddNote onAdd={addNote} />
+            <section aria-live="polite">{content}</section>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
